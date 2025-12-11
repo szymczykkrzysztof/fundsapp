@@ -1,6 +1,10 @@
 package com.komy.fundsapp.models.dto
 
-data class LoginDTO(
+import java.beans.ConstructorProperties
+
+data class LoginDTO
+@ConstructorProperties("email", "password")
+constructor(
     val email: String,
     val password: String
 )

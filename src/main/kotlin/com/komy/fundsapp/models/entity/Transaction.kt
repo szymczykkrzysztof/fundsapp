@@ -21,9 +21,11 @@ class Transaction {
     @Id
     @GeneratedValue
     var id: Long? = null
+
     @Min(0)
     var amount: Double = 0.0
 
+    @Column(name = "user_id")
     var userId: Long = 0
 
 

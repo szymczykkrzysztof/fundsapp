@@ -22,3 +22,4 @@ spring:
 funds_app:
   jwt:
     secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}

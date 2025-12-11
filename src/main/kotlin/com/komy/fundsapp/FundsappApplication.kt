@@ -16,5 +16,6 @@ fun main(args: Array<String>) {
     System.setProperty("DB_PASSWORD", dotenv["DB_PASSWORD"])
     System.setProperty("DB_URL", dotenv["DB_URL"])
     System.setProperty("JWT_SECRET", dotenv["JWT_SECRET"])
+    System.setProperty("JWT_EXPIRATION", dotenv["JWT_EXPIRATION"])
     runApplication<FundsappApplication>(*args)
 }

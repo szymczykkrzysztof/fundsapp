@@ -10,7 +10,7 @@ spring:
       ddl-auto: create-drop
     show-sql: true
 
-security:
+funds_app:
   jwt:
-    secret: test-secret-key-123456
-    expiration-seconds: 3600
+    secret: test-secret-key-123456-test-secret-key-123456
+    expiration: 3600000
