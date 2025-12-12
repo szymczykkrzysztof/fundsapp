@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface TransactionRepository : JpaRepository<Transaction, Long> {
-    fun findByUserId(userId: Long): List<Transaction?>
+    fun findByUserId(userId: Long): List<Transaction>
 
 //    @Query(value = "SELECT * FROM transactions t WHERE t.user_id = ?1", nativeQuery = true)
 //    fun findByUserIdQuery(userId: Long): List<Transaction?>

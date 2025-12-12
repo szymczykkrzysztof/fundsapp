@@ -50,7 +50,7 @@ class JWTUtility(
         }
     }
 
-    fun getUserId(token: String): Long? = getClaims(token)?.get("userId") as Long
+    fun getUserId(token: String): Long = getClaims(token)?.get("userId") as Long
 
     fun getEmail(token: String): String = getClaims(token)?.get("email") as String
 

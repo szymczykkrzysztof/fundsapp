@@ -18,9 +18,9 @@ class JwtAuthorizationFilter(
     private fun getAuthentication(token: String): UsernamePasswordAuthenticationToken? {
         if (!jwtTokenUtil.isTokenValid(token)) return null
         val email = jwtTokenUtil.getEmail(token)
-        val user = service.loadUserByUsername(email)
+        val user = service.loadUserByUsername(email) ?: return null
 
-        return UsernamePasswordAuthenticationToken(email, null, user.authorities)
+        return UsernamePasswordAuthenticationToken(user, null, user.authorities)
     }
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {

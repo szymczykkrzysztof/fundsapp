@@ -10,6 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 open class SecurityConfig(
@@ -27,17 +28,31 @@ open class SecurityConfig(
         val authenticationManager = authManager(http)
 
         http
-            .authenticationManager(authenticationManager)
-            .addFilter(JwtAuthenticationFilter(jwtUtility, authenticationManager))
-            .addFilter(JwtAuthorizationFilter(jwtUtility, userDetailsService, authenticationManager))
-            .sessionManagement { sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .csrf { csrf -> csrf.disable() }
-            .authorizeHttpRequests { auth ->
-                auth.requestMatchers("/signup").permitAll()
-                    .anyRequest().authenticated()
+            .csrf { it.disable() }
+            .cors { }
+            .sessionManagement {
+                it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
+            .authenticationManager(authenticationManager)
+            .addFilterBefore(
+                JwtAuthorizationFilter(
+                    jwtUtility, userDetailsService,
+                    authManager = authenticationManager
+                ),
+                UsernamePasswordAuthenticationFilter::class.java
+            )
+            .addFilter(
+                JwtAuthenticationFilter(jwtUtility, authenticationManager)
+            )
+
+            .authorizeHttpRequests {
+                it.requestMatchers("/signup", "/signin").permitAll()
+                it.anyRequest().authenticated()
+            }
+
         return http.build()
     }
+
 
     @Bean
     open fun bCryptPasswordEncoder(): BCryptPasswordEncoder {

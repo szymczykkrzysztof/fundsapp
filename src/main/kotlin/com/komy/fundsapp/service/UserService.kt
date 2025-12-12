@@ -8,6 +8,7 @@ import com.komy.fundsapp.repository.AccountRepository
 import com.komy.fundsapp.repository.UserRepository
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.Optional
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
@@ -18,19 +19,22 @@ class UserService(
     val accountRepository: AccountRepository,
     val bCryptPasswordEncoder: BCryptPasswordEncoder
 ) {
-
+    @Transactional(readOnly = true)
     fun getUserByEmail(email: String): Optional<User> {
         return userRepository.findByEmail(email)
     }
 
+    @Transactional
     fun saveUser(user: User): User {
         return userRepository.save(user)
     }
 
+    @Transactional(readOnly = true)
     fun getUserById(id: Long): Optional<User> {
         return userRepository.findById(id)
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     fun signUpUser(signUpDTO: SignUpDTO) {
         if (signUpDTO.email?.let { getUserByEmail(it).getOrNull() } == null) {
             val user = User()

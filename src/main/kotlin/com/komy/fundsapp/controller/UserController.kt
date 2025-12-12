@@ -15,11 +15,11 @@ class UserController(
 ) {
     @PostMapping("/signup")
     fun signup(@RequestBody @Valid signUpDTO: SignUpDTO): ResponseEntity<String> {
-        try {
+        return try {
             userService.signUpUser(signUpDTO)
-            return ResponseEntity("Created", HttpStatus.CREATED)
+            ResponseEntity("Created", HttpStatus.CREATED)
         } catch (e: Exception) {
-            return ResponseEntity(e.message, HttpStatus.CONFLICT)
+            ResponseEntity(e.message, HttpStatus.CONFLICT)
         }
 
     }
