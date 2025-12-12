@@ -9,13 +9,7 @@ import com.komy.fundsapp.utility.JWTUtility
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/accounts")
@@ -25,11 +19,10 @@ class AccountController(
     val userService: UserService
 ) {
     @PostMapping("/saving")
-    fun createSavingAccount(@RequestHeader("Authorization") bearerToken: String) {
-        val userId = jwtUtility.getUserId(bearerToken.substring(7))
+    fun createSavingAccount(@AuthenticationPrincipal userDetails: UserSecurity): ResponseEntity<Account> {
         try {
-            val newSavingAccount: Account = accountService.createAccount(userId, AccountType.SAVING)
-            ResponseEntity<Account>(newSavingAccount, HttpStatus.CREATED)
+            val newSavingAccount: Account = accountService.createAccount(userDetails.id, AccountType.SAVING)
+            return ResponseEntity(newSavingAccount, HttpStatus.CREATED)
         } catch (e: Exception) {
             throw Exception(e)
         }
