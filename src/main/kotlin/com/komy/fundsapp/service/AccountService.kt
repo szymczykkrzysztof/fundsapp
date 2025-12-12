@@ -2,6 +2,7 @@ package com.komy.fundsapp.service
 
 import com.komy.fundsapp.models.entity.Account
 import com.komy.fundsapp.models.enum.AccountType
+import com.komy.fundsapp.models.exceptions.UserNotFoundException
 import com.komy.fundsapp.repository.AccountRepository
 import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.Lock
@@ -42,13 +43,13 @@ class AccountService
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Transactional
-    fun deleteAccount(account: Account): Unit {
+    fun deleteAccount(account: Account) {
         accountRepository.delete(account)
     }
 
     @Transactional
     fun createAccount(userId: Long, accountType: AccountType): Account {
-        val user = userService.getUserById(userId).getOrElse { throw Exception("User not found") }
+        val user = userService.getUserById(userId).getOrElse { throw UserNotFoundException("User not found") }
         val account = Account()
         account.name = "${user.firstName} ${accountType.name} ${UUID.randomUUID()}"
         account.balance = 0.0

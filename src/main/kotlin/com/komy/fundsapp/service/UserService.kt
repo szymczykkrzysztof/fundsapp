@@ -4,12 +4,14 @@ import com.komy.fundsapp.models.dto.SignUpDTO
 import com.komy.fundsapp.models.entity.Account
 import com.komy.fundsapp.models.entity.User
 import com.komy.fundsapp.models.enum.AccountType
+import com.komy.fundsapp.models.exceptions.UserAlreadyExistException
 import com.komy.fundsapp.repository.AccountRepository
 import com.komy.fundsapp.repository.UserRepository
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.Optional
+import java.lang.IllegalArgumentException
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
@@ -34,20 +36,22 @@ class UserService(
         return userRepository.findById(id)
     }
 
-    @Transactional(rollbackFor = [Exception::class])
+    @Transactional
     fun signUpUser(signUpDTO: SignUpDTO) {
         if (signUpDTO.email?.let { getUserByEmail(it).getOrNull() } == null) {
             val user = User()
-            user.firstName = signUpDTO.firstName ?: throw Exception("First name is required")
-            user.lastName = signUpDTO.lastName ?: throw Exception("Last name is required")
-            user.email = signUpDTO.email ?: throw Exception("Email is required")
+            user.firstName =
+                signUpDTO.firstName ?: throw IllegalArgumentException("Unable to create User, provide a first name")
+            user.lastName =
+                signUpDTO.lastName ?: throw IllegalArgumentException("Unable to create User, provide a last name")
+            user.email = signUpDTO.email ?: throw IllegalArgumentException("Unable to create User, provide an email")
             user.age = signUpDTO.age
             user.password = bCryptPasswordEncoder.encode(signUpDTO.password)
 
             saveUser(user)
 
             val account = Account()
-            account.name = "${user.firstName} ${AccountType.CHECKING.name} ${UUID.randomUUID()}}"
+            account.name = "${user.firstName} ${AccountType.CHECKING.name} ${UUID.randomUUID()}"
             account.balance = 0.0
             account.user = user
             account.accountType = AccountType.CHECKING
@@ -55,7 +59,7 @@ class UserService(
             user.defaultAccountId = account.id
             saveUser(user)
         } else {
-            throw Exception("User already exists, please login")
+            throw UserAlreadyExistException("User already exists, please login")
         }
     }
 }

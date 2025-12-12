@@ -30,12 +30,8 @@ class FundsController(
         @AuthenticationPrincipal userDetails: UserSecurity,
         @RequestBody @Valid fundsDTO: FundsDTO
     ): ResponseEntity<Transaction> {
-        return try {
-            val transaction = fundsService.handleDeposit(fundsDTO, userDetails.id)
-            ResponseEntity.status(HttpStatus.CREATED).body(transaction)
-        } catch (e: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+        val transaction = fundsService.handleDeposit(fundsDTO, userDetails.id)
+        return ResponseEntity.status(HttpStatus.CREATED).body(transaction)
     }
 
     @PostMapping("/withdraw")
@@ -43,12 +39,8 @@ class FundsController(
         @AuthenticationPrincipal userDetails: UserSecurity,
         @RequestBody @Valid fundsDTO: FundsDTO
     ): ResponseEntity<Transaction> {
-        return try {
-            val transaction = fundsService.handleWithdraw(fundsDTO, userDetails.id)
-            ResponseEntity.status(HttpStatus.CREATED).body(transaction)
-        } catch (e: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+        val transaction = fundsService.handleWithdraw(fundsDTO, userDetails.id)
+        return ResponseEntity.status(HttpStatus.CREATED).body(transaction)
     }
 
     @PostMapping("/transfer")
@@ -56,12 +48,8 @@ class FundsController(
         @AuthenticationPrincipal userDetails: UserSecurity,
         @RequestBody @Valid fundsDTO: FundsDTO
     ): ResponseEntity<Transaction> {
-        return try {
-            val transaction = fundsService.handleTransfer(fundsDTO, userDetails.id)
-            ResponseEntity.status(HttpStatus.CREATED).body(transaction)
-        } catch (e: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+        val transaction = fundsService.handleTransfer(fundsDTO, userDetails.id)
+        return ResponseEntity.status(HttpStatus.CREATED).body(transaction)
     }
 
     @PostMapping("/send")
@@ -69,12 +57,8 @@ class FundsController(
         @AuthenticationPrincipal userDetails: UserSecurity,
         @RequestBody @Valid fundsDTO: FundsDTO
     ): ResponseEntity<Transaction> {
-        return try {
-            val transaction = fundsService.handleSend(fundsDTO, userDetails.id)
-            ResponseEntity.status(HttpStatus.CREATED).body(transaction)
-        } catch (e: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+        val transaction = fundsService.handleSend(fundsDTO, userDetails.id)
+        return ResponseEntity.status(HttpStatus.CREATED).body(transaction)
     }
 
 

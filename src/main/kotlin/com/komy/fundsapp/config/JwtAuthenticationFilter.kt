@@ -1,7 +1,7 @@
 package com.komy.fundsapp.config
 
-import com.google.gson.Gson
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.gson.Gson
 import com.komy.fundsapp.models.UserSecurity
 import com.komy.fundsapp.models.dto.LoginDTO
 import com.komy.fundsapp.models.response.TokenResponse
@@ -15,8 +15,9 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import java.util.Collections
-import java.util.Date
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class JwtAuthenticationFilter(
     private val jwtTokenUtil: JWTUtility,
@@ -63,7 +64,7 @@ class JwtAuthenticationFilter(
     }
 
     private data class InvalidCredentialsError(
-        val timestamp: Long = Date().time,
+        val timestamp: String = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
         val status: Int = 401,
         val message: String = "Please check your email and password"
     ) {

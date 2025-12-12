@@ -15,12 +15,7 @@ class UserController(
 ) {
     @PostMapping("/signup")
     fun signup(@RequestBody @Valid signUpDTO: SignUpDTO): ResponseEntity<String> {
-        return try {
-            userService.signUpUser(signUpDTO)
-            ResponseEntity("Created", HttpStatus.CREATED)
-        } catch (e: Exception) {
-            ResponseEntity(e.message, HttpStatus.CONFLICT)
-        }
-
+        userService.signUpUser(signUpDTO)
+        return ResponseEntity("Created", HttpStatus.CREATED)
     }
 }

@@ -5,6 +5,9 @@ import com.komy.fundsapp.models.entity.Account
 import com.komy.fundsapp.models.entity.Transaction
 import com.komy.fundsapp.models.entity.User
 import com.komy.fundsapp.models.enum.TransactionType
+import com.komy.fundsapp.models.exceptions.AccountNotFoundException
+import com.komy.fundsapp.models.exceptions.InsufficientFundsException
+import com.komy.fundsapp.models.exceptions.UserNotFoundException
 import com.komy.fundsapp.repository.TransactionRepository
 import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.Lock
@@ -42,14 +45,14 @@ class FundsService(
 
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Transactional(rollbackFor = [Exception::class])
+    @Transactional(isolation= Isolation.SERIALIZABLE)
     fun handleDeposit(fundsDTO: FundsDTO, userId: Long): Transaction {
-        val user = userService.getUserById(userId).getOrElse { throw Exception("User does not exist") }
+        val user = userService.getUserById(userId).getOrElse { throw UserNotFoundException("User not found") }
         val account =
             accountService.findAccountById(fundsDTO.toAccountId)
-                .getOrElse { throw Exception("Account not found for the user") }
+                .getOrElse { throw AccountNotFoundException("Account not found for the user") }
         if (user.id != account.user.id) {
-            throw Exception("Account does not match the user")
+            throw AccountNotFoundException("Account does not match the user")
         }
         account.balance += fundsDTO.amount
         val newTransaction =
@@ -62,17 +65,17 @@ class FundsService(
     }
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = [Exception::class])
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun handleWithdraw(fundsDTO: FundsDTO, userId: Long): Transaction {
-        val user = userService.getUserById(userId).getOrElse { throw Exception("User does not exist") }
+        val user = userService.getUserById(userId).getOrElse { throw UserNotFoundException("User not found") }
         val account =
             accountService.findAccountById(fundsDTO.fromAccountId)
-                .getOrElse { throw Exception("Account not found for the user") }
+                .getOrElse { throw AccountNotFoundException("Account not found for the user") }
         if (user.id != account.user.id) {
-            throw Exception("Account does not match the user")
+            throw AccountNotFoundException("Account does not match the user")
         }
         if (account.balance < fundsDTO.amount) {
-            throw Exception("Insufficient funds in account")
+            throw InsufficientFundsException("Insufficient funds in account")
         }
         account.balance -= fundsDTO.amount
         val newTransaction =
@@ -85,20 +88,20 @@ class FundsService(
     }
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Transactional(rollbackFor = [Exception::class])
+    @Transactional
     fun handleTransfer(fundsDTO: FundsDTO, userId: Long): Transaction {
-        val user = userService.getUserById(userId).getOrElse { throw Exception("User does not exist") }
+        val user = userService.getUserById(userId).getOrElse { throw UserNotFoundException("User not found") }
         val fromAccount =
             accountService.findAccountById(fundsDTO.fromAccountId)
-                .getOrElse { throw Exception("Source Account is invalid") }
+                .getOrElse { throw AccountNotFoundException("Source Account is invalid") }
         val toAccount =
             accountService.findAccountById(fundsDTO.toAccountId)
-                .getOrElse { throw Exception("Destination Account is invalid") }
+                .getOrElse { throw AccountNotFoundException("Destination Account is invalid") }
 
         validateAccountsOwner(user, fromAccount, toAccount)
 
         if (fromAccount.balance < fundsDTO.amount) {
-            throw Exception("Insufficient funds in source account")
+            throw InsufficientFundsException("Insufficient funds in source account")
         }
 
         fromAccount.balance -= fundsDTO.amount
@@ -119,32 +122,32 @@ class FundsService(
 
     private fun validateAccountsOwner(user: User, fromAccount: Account, toAccount: Account) {
         if (user.id != fromAccount.user.id || user.id != toAccount.user.id) {
-            throw Exception("One or both accounts do not belong to the user")
+            throw AccountNotFoundException("One or both accounts do not belong to the user")
         }
 
     }
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Transactional(rollbackFor = [Exception::class])
+    @Transactional
     fun handleSend(fundsDTO: FundsDTO, userId: Long): Transaction {
         val user =
-            userService.getUserById(userId).getOrElse { throw Exception("User attempting to send does not exist") }
+            userService.getUserById(userId).getOrElse { throw UserNotFoundException("User attempting to send does not exist") }
         val fromAccount =
             accountService.findAccountById(fundsDTO.fromAccountId)
-                .getOrElse { throw Exception("Sender Account is invalid") }
+                .getOrElse { throw AccountNotFoundException("Sender Account is invalid") }
 
         if (user.id != fromAccount.user.id) {
-            throw Exception("Sender account does not belong to the user")
+            throw AccountNotFoundException("Sender account does not belong to the user")
         }
 
         val toUser =
             userService.getUserByEmail(fundsDTO.receiverEmail).getOrElse { throw Exception("Recipient does not exist") }
-        val toAccountId = toUser.defaultAccountId ?: throw Exception("Recipient must have a send account setup")
+        val toAccountId = toUser.defaultAccountId ?: throw AccountNotFoundException("Recipient must have a send account setup")
 
         val toAccount = accountService.findAccountById(toAccountId)
-            .getOrElse { throw Exception("Recipient account does not exist") }
+            .getOrElse { throw AccountNotFoundException("Recipient account does not exist") }
 
         if (fromAccount.balance < fundsDTO.amount) {
-            throw Exception("Insufficient funds in source account")
+            throw InsufficientFundsException("Insufficient funds in source account")
         }
 
         fromAccount.balance -= fundsDTO.amount
@@ -166,7 +169,7 @@ class FundsService(
                 toAccountId = toAccount.id,
                 fromAccountId = fromAccount.id
             )
-        } ?: throw Exception("Recipient does not exist")
+        } ?: throw UserNotFoundException("Recipient does not exist")
         transactionRepository.saveAll(listOf(fromTransaction, toTransaction))
         accountService.saveMultipleAccounts(listOf(fromAccount, toAccount))
 
