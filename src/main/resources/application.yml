@@ -23,3 +23,11 @@ funds_app:
   jwt:
     secret: ${JWT_SECRET}
     expiration: ${JWT_EXPIRATION}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,beans,threaddump,heapdump,loggers
+  endpoint:
+    health:
+      show-details: always

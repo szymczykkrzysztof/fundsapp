@@ -46,6 +46,7 @@ open class SecurityConfig(
             )
 
             .authorizeHttpRequests {
+                it.requestMatchers("/actuator/health").permitAll()
                 it.requestMatchers("/signup", "/signin").permitAll()
                 it.anyRequest().authenticated()
             }
